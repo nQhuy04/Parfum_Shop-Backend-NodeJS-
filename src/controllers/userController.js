@@ -1,38 +1,76 @@
-const { createUserService, loginService, getUserService } = require("../services/userService");
+const {
+  createUserService,
+  loginService,
+  getUserService,
+} = require("../services/userService");
 
-
-//Lấy data
+/**
+ * Đăng ký user
+ */
 const createUser = async (req, res) => {
+  const { name, email, password } = req.body;
 
-    const { name, email, password } = req.body;
-    //ta gọi function tạo mới người dùng ở bên userService tại đây
-    //đẩy qua service để nó tạo data cho chúng ta
-    const data = await createUserService(name, email, password)
-    return res.status(200).json(data)// trả data về phía frontend
-}
+  // Kiểm tra thiếu input
+  if (!name || !email || !password) {
+    return res.status(400).json({
+      EC: 1,
+      EM: "Vui lòng nhập đầy đủ name, email, password",
+      DT: null,
+    });
+  }
 
-//Lấy data
+  const data = await createUserService(name, email, password);
+  return res.status(200).json(data);
+};
+
+/**
+ * Lấy danh sách user
+ */
 const getUser = async (req, res) => {
+  const data = await getUserService();
+  return res.status(200).json(data);
+};
 
-    const data = await getUserService();
-    return res.status(200).json(data)// trả data về phía frontend
-}
-
+/**
+ * Lấy thông tin account từ token (req.user do middleware gán vào)
+ */
 const getAccount = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({
+      EC: 1,
+      EM: "Token không hợp lệ hoặc đã hết hạn",
+      DT: null,
+    });
+  }
+  return res.status(200).json({
+    EC: 0,
+    EM: "Lấy thông tin account thành công",
+    DT: req.user,
+  });
+};
 
-    return res.status(200).json(req.user)// trả data về phía frontend
-}
-
-
+/**
+ * Đăng nhập
+ */
 const handleLogin = async (req, res) => {
-    const { email, password } = req.body;
-    const data = await loginService(email, password);
-    return res.status(200).json(data)// trả data về phía frontend, data được xử lý và được lấy ra từ loginService
-}
+  const { email, password } = req.body;
 
+  // Validate input
+  if (!email || !password) {
+    return res.status(400).json({
+      EC: 1,
+      EM: "Vui lòng nhập đầy đủ email và password",
+      DT: null,
+    });
+  }
 
-//Không sử dụng default vì ta cần xuất ra nhiều function hơn là 1 cái
+  const data = await loginService(email, password);
+  return res.status(200).json(data);
+};
+
 module.exports = {
-    createUser, handleLogin, getUser, getAccount
-
-}
+  createUser,
+  handleLogin,
+  getUser,
+  getAccount,
+};

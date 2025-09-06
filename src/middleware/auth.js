@@ -1,43 +1,75 @@
-require("dotenv").config();
-const jwt = require("jsonwebtoken");
+// require("dotenv").config();
+// const jwt = require("jsonwebtoken");
 
+// const auth = (req, res, next) => {
+//   // Các route không cần auth
+//   const white_lists = ["/", "/register", "/login"];
 
-//Xử lý, kiểm tra token
-const auth = (req, res, next) => {
+//   if (white_lists.includes(req.originalUrl.replace("/v1/api", ""))) {
+//     return next();
+//   }
 
-    const white_lists = ["/", "/register", "/login"];
-    if (white_lists.find(item => '/v1/api' + item === req.originalUrl)) {
-        next();
-    } else {
-        if (req?.headers?.authorization?.split(' ')?.[1]) {
-            const token = req.headers.authorization.split(' ')[1];
+//   const token = req?.headers?.authorization?.split(" ")?.[1];
+//   if (!token) {
+//     return res.status(401).json({
+//       EC: 1,
+//       EM: "Thiếu Access Token trong header",
+//       DT: null,
+//     });
+//   }
 
-            //verify token
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     req.user = {
+//       email: decoded.email,
+//       name: decoded.name,
+//       createdBy: "HuyQuang",
+//     };
+//     console.log(">>> check token: ", decoded);
+//     next();
+//   } catch (error) {
+//     return res.status(401).json({
+//       EC: 2,
+//       EM: "Token không hợp lệ hoặc đã hết hạn",
+//       DT: null,
+//     });
+//   }
+// };
 
-            try {
-                const decoded = jwt.verify(token, process.env.JWT_SECRET)//data giải mã ra
-                req.user =  {
-                    email: decoded.email,
-                    name: decoded.name,
-                    createdBy: "HuyQuang",
-                }
-                console.log(">>> check token: ", decoded);
-                next();
-            } catch (error) {
-                return res.status(401).json({
-                    message: "Token bị hết hạn hoặc không hợp lệ"
+// module.exports = auth;
 
-                })//Thông tin mã lỗi
-            }
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
 
-        } else {
-            //return exception
-            return res.status(401).json({
-                message: "Bạn chưa truyền Access Token ở header/Hoặc token bị hết hạn"
+const verifyJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
-            })//Thông tin mã lỗi
-        }
+  if (!token) {
+    return res.status(401).json({ EC: 1, EM: 'Thiếu Access Token trong header', DT: null });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // decoded should contain at least: { id, email, name, role, iat, exp }
+    req.user = decoded;
+    return next();
+  } catch (err) {
+    return res.status(401).json({ EC: 2, EM: 'Token không hợp lệ hoặc đã hết hạn', DT: null });
+  }
+};
+
+const requireRole = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ EC: 1, EM: 'Unauthorized', DT: null });
     }
-}
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ EC: 1, EM: 'Bạn không có quyền thực hiện hành động này', DT: null });
+    }
+    return next();
+  };
+};
 
-module.exports = auth;
+module.exports = { verifyJWT, requireRole };
+
