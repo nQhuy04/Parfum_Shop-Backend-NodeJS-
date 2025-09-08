@@ -6,11 +6,10 @@ const jwt = require("jsonwebtoken");
 const saltRounds = 10;
 
 /**
- * Tạo user mới
+ * Tạo user mới (Register)
  */
 const createUserService = async (name, email, password) => {
   try {
-    // Check email tồn tại
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return {
@@ -20,15 +19,13 @@ const createUserService = async (name, email, password) => {
       };
     }
 
-    // Hash password
     const hashPassword = await bcrypt.hash(password, saltRounds);
 
-    // Lưu user vào DB
     const newUser = await User.create({
       name,
       email,
       password: hashPassword,
-      role: "user", // mặc định là user
+      role: "user",
     });
 
     return {
@@ -43,32 +40,7 @@ const createUserService = async (name, email, password) => {
     };
   } catch (error) {
     console.log(">>> createUserService error: ", error);
-    return {
-      EC: -1,
-      EM: "Lỗi server khi tạo tài khoản",
-      DT: null,
-    };
-  }
-};
-
-/**
- * Lấy danh sách user
- */
-const getUserService = async () => {
-  try {
-    const users = await User.find({}).select("-password");
-    return {
-      EC: 0,
-      EM: "Lấy danh sách user thành công!",
-      DT: users,
-    };
-  } catch (error) {
-    console.log(">>> getUserService error: ", error);
-    return {
-      EC: -1,
-      EM: "Lỗi server khi lấy danh sách user",
-      DT: null,
-    };
+    return { EC: -1, EM: "Lỗi server khi tạo tài khoản", DT: null };
   }
 };
 
@@ -77,27 +49,16 @@ const getUserService = async () => {
  */
 const loginService = async (emailInput, password) => {
   try {
-    // Tìm user theo email
     const user = await User.findOne({ email: emailInput });
     if (!user) {
-      return {
-        EC: 1,
-        EM: "Email hoặc mật khẩu không hợp lệ",
-        DT: null,
-      };
+      return { EC: 1, EM: "Email hoặc mật khẩu không hợp lệ", DT: null };
     }
 
-    // Kiểm tra password
     const isMatchPassword = await bcrypt.compare(password, user.password);
     if (!isMatchPassword) {
-      return {
-        EC: 2,
-        EM: "Email hoặc mật khẩu không hợp lệ",
-        DT: null,
-      };
+      return { EC: 2, EM: "Email hoặc mật khẩu không hợp lệ", DT: null };
     }
 
-    // Tạo JWT token
     const payload = {
       id: user._id,
       email: user.email,
@@ -124,11 +85,73 @@ const loginService = async (emailInput, password) => {
     };
   } catch (error) {
     console.log(">>> loginService error: ", error);
-    return {
-      EC: -1,
-      EM: "Lỗi server khi đăng nhập",
-      DT: null,
-    };
+    return { EC: -1, EM: "Lỗi server khi đăng nhập", DT: null };
+  }
+};
+
+/**
+ * Lấy danh sách user (Admin only)
+ */
+const getUserService = async () => {
+  try {
+    const users = await User.find({}).select("-password");
+    return { EC: 0, EM: "Lấy danh sách user thành công!", DT: users };
+  } catch (error) {
+    console.log(">>> getUserService error: ", error);
+    return { EC: -1, EM: "Lỗi server khi lấy danh sách user", DT: null };
+  }
+};
+
+/**
+ * User update profile
+ */
+const updateUserProfileService = async (userId, data) => {
+  try {
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, saltRounds);
+    }
+    const user = await User.findByIdAndUpdate(userId, data, {
+      new: true,
+    }).select("-password");
+
+    if (!user) return { EC: 1, EM: "Không tìm thấy user", DT: null };
+    return { EC: 0, EM: "Cập nhật profile thành công", DT: user };
+  } catch (error) {
+    console.log(">>> updateUserProfileService error: ", error);
+    return { EC: -1, EM: "Lỗi server khi update profile", DT: null };
+  }
+};
+
+/**
+ * Admin update role
+ */
+const updateUserRoleService = async (userId, role) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { role },
+      { new: true }
+    ).select("-password");
+
+    if (!user) return { EC: 1, EM: "Không tìm thấy user", DT: null };
+    return { EC: 0, EM: "Cập nhật role thành công", DT: user };
+  } catch (error) {
+    console.log(">>> updateUserRoleService error: ", error);
+    return { EC: -1, EM: "Lỗi server khi update role", DT: null };
+  }
+};
+
+/**
+ * Admin delete user
+ */
+const deleteUserService = async (userId) => {
+  try {
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) return { EC: 1, EM: "Không tìm thấy user", DT: null };
+    return { EC: 0, EM: "Xóa user thành công", DT: null };
+  } catch (error) {
+    console.log(">>> deleteUserService error: ", error);
+    return { EC: -1, EM: "Lỗi server khi xóa user", DT: null };
   }
 };
 
@@ -136,4 +159,7 @@ module.exports = {
   createUserService,
   loginService,
   getUserService,
+  updateUserProfileService,
+  updateUserRoleService,
+  deleteUserService,
 };

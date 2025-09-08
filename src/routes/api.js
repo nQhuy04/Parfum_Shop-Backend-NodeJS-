@@ -1,57 +1,31 @@
-// const express = require("express");
-// const {
-//   createUser,
-//   handleLogin,
-//   getUser,
-//   getAccount,
-// } = require("../controllers/userController");
-// const auth = require("../middleware/auth");
-
-// const routerAPI = express.Router();
-
-// // Áp dụng middleware auth cho tất cả route
-// routerAPI.all("*", auth);
-
-// // Routes
-// routerAPI.get("/", (req, res) => res.status(200).json("Hello world api"));
-// routerAPI.post("/register", createUser);
-// routerAPI.post("/login", handleLogin);
-// routerAPI.get("/user", getUser);
-// routerAPI.get("/account", getAccount);
-
-// module.exports = routerAPI;
-
-const express = require('express');
-const { createUser, handleLogin, getUser, getAccount } = require('../controllers/userController');
-const productRoutes = require('./product');
-const { verifyJWT } = require('../middleware/auth');
-const orderRoutes = require('./order');
+// src/routes/api.js
+const express = require("express");
+const { createUser, handleLogin } = require("../controllers/userController");
+const productRoutes = require("./product");
+const orderRoutes = require("./order");
+const userRoutes = require("./user");
 const {
-    getCart,
-    addToCart,
-    updateItemQuantity,
-    removeItem,
-    clearCart
-} = require('../controllers/cartController');
+  getCart,
+  addToCart,
+  updateItemQuantity,
+  removeItem,
+  clearCart,
+} = require("../controllers/cartController");
+const { verifyJWT } = require("../middleware/auth");
 
 const routerAPI = express.Router();
 
 // Public
-routerAPI.get('/', (req, res) => res.status(200).json('Hello world api'));
-routerAPI.post('/register', createUser);
-routerAPI.post('/login', handleLogin);
+routerAPI.get("/", (req, res) => res.status(200).json("Hello world api"));
+routerAPI.post("/register", createUser);
+routerAPI.post("/login", handleLogin);
 
-// Mount product routes
-routerAPI.use('/products', productRoutes);
+// Mount routes
+routerAPI.use("/products", productRoutes);
+routerAPI.use("/orders", orderRoutes);
+routerAPI.use("/users", userRoutes); // <--- Quan trọng: tất cả user API nằm ở đây
 
-// Protected user endpoints
-routerAPI.get('/user', verifyJWT, getUser);
-routerAPI.get('/account', verifyJWT, getAccount);
-
-// Order routes
-routerAPI.use('/orders', orderRoutes);
-
-// Cart routes (chỉ user đã login mới dùng được)
+// Cart routes (user must login)
 routerAPI.get("/cart", verifyJWT, getCart);
 routerAPI.post("/cart", verifyJWT, addToCart);
 routerAPI.put("/cart", verifyJWT, updateItemQuantity);
@@ -59,5 +33,3 @@ routerAPI.delete("/cart/:productId", verifyJWT, removeItem);
 routerAPI.delete("/cart", verifyJWT, clearCart);
 
 module.exports = routerAPI;
-
-

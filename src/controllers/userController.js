@@ -2,6 +2,9 @@ const {
   createUserService,
   loginService,
   getUserService,
+  updateUserProfileService,
+  updateUserRoleService,
+  deleteUserService,
 } = require("../services/userService");
 
 /**
@@ -9,8 +12,6 @@ const {
  */
 const createUser = async (req, res) => {
   const { name, email, password } = req.body;
-
-  // Kiểm tra thiếu input
   if (!name || !email || !password) {
     return res.status(400).json({
       EC: 1,
@@ -18,21 +19,33 @@ const createUser = async (req, res) => {
       DT: null,
     });
   }
-
-  const data = await createUserService(name, email, password);
-  return res.status(200).json(data);
+  return res.status(200).json(await createUserService(name, email, password));
 };
 
 /**
- * Lấy danh sách user
+ * Đăng nhập
+ */
+const handleLogin = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({
+      EC: 1,
+      EM: "Vui lòng nhập đầy đủ email và password",
+      DT: null,
+    });
+  }
+  return res.status(200).json(await loginService(email, password));
+};
+
+/**
+ * Lấy danh sách user (Admin only)
  */
 const getUser = async (req, res) => {
-  const data = await getUserService();
-  return res.status(200).json(data);
+  return res.status(200).json(await getUserService());
 };
 
 /**
- * Lấy thông tin account từ token (req.user do middleware gán vào)
+ * Lấy account từ token
  */
 const getAccount = async (req, res) => {
   if (!req.user) {
@@ -50,22 +63,28 @@ const getAccount = async (req, res) => {
 };
 
 /**
- * Đăng nhập
+ * User update profile
  */
-const handleLogin = async (req, res) => {
-  const { email, password } = req.body;
+const updateUserProfile = async (req, res) => {
+  const userId = req.user.id;
+  return res.status(200).json(await updateUserProfileService(userId, req.body));
+};
 
-  // Validate input
-  if (!email || !password) {
-    return res.status(400).json({
-      EC: 1,
-      EM: "Vui lòng nhập đầy đủ email và password",
-      DT: null,
-    });
-  }
+/**
+ * Admin update role
+ */
+const updateUserRole = async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+  return res.status(200).json(await updateUserRoleService(id, role));
+};
 
-  const data = await loginService(email, password);
-  return res.status(200).json(data);
+/**
+ * Admin delete user
+ */
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  return res.status(200).json(await deleteUserService(id));
 };
 
 module.exports = {
@@ -73,4 +92,7 @@ module.exports = {
   handleLogin,
   getUser,
   getAccount,
+  updateUserProfile,
+  updateUserRole,
+  deleteUser,
 };
