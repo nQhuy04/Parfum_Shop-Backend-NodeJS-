@@ -25,6 +25,7 @@ const express = require('express');
 const { createUser, handleLogin, getUser, getAccount } = require('../controllers/userController');
 const productRoutes = require('./product');
 const { verifyJWT } = require('../middleware/auth');
+const orderRoutes = require('./order');
 
 const routerAPI = express.Router();
 
@@ -39,6 +40,9 @@ routerAPI.use('/products', productRoutes);
 // Protected user endpoints
 routerAPI.get('/user', verifyJWT, getUser);
 routerAPI.get('/account', verifyJWT, getAccount);
+//Order
+routerAPI.use('/orders', orderRoutes);
+
 
 module.exports = routerAPI;
 
