@@ -26,6 +26,13 @@ const { createUser, handleLogin, getUser, getAccount } = require('../controllers
 const productRoutes = require('./product');
 const { verifyJWT } = require('../middleware/auth');
 const orderRoutes = require('./order');
+const {
+    getCart,
+    addToCart,
+    updateItemQuantity,
+    removeItem,
+    clearCart
+} = require('../controllers/cartController');
 
 const routerAPI = express.Router();
 
@@ -40,9 +47,17 @@ routerAPI.use('/products', productRoutes);
 // Protected user endpoints
 routerAPI.get('/user', verifyJWT, getUser);
 routerAPI.get('/account', verifyJWT, getAccount);
-//Order
+
+// Order routes
 routerAPI.use('/orders', orderRoutes);
 
+// Cart routes (chỉ user đã login mới dùng được)
+routerAPI.get("/cart", verifyJWT, getCart);
+routerAPI.post("/cart", verifyJWT, addToCart);
+routerAPI.put("/cart", verifyJWT, updateItemQuantity);
+routerAPI.delete("/cart/:productId", verifyJWT, removeItem);
+routerAPI.delete("/cart", verifyJWT, clearCart);
 
 module.exports = routerAPI;
+
 
