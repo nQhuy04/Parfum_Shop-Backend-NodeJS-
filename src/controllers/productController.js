@@ -16,9 +16,11 @@ const getProduct = async (req, res) => {
 
 /** POST /v1/api/products (admin) */
 const createProduct = async (req, res) => {
-  const { name, price } = req.body;
-  if (!name || price == null) {
-    return res.status(400).json({ EC: 1, EM: 'Thiếu trường name hoặc price', DT: null });
+  // === THAY ĐỔI Ở ĐÂY: Nâng cấp validation ===
+  const { name, price, brand, gender } = req.body;
+  // Kiểm tra tất cả các trường bắt buộc
+  if (!name || price == null || !brand || !gender) {
+    return res.status(400).json({ EC: 1, EM: 'Thiếu các trường bắt buộc: name, price, brand, gender', DT: null });
   }
   const result = await productService.createProduct(req.body);
   return res.status(result.EC === 0 ? 201 : 500).json(result);
@@ -26,6 +28,7 @@ const createProduct = async (req, res) => {
 
 /** PUT /v1/api/products/:id (admin) */
 const updateProduct = async (req, res) => {
+  // Hàm này không cần thay đổi vì service đã xử lý linh hoạt
   const result = await productService.updateProductById(req.params.id, req.body);
   return res.status(result.EC === 0 ? 200 : (result.EC === 1 ? 404 : 500)).json(result);
 };

@@ -2,8 +2,10 @@ const orderService = require('../services/orderService');
 
 const createOrder = async (req, res) => {
   const userId = req.user && (req.user.id || req.user._id);
-  const { items, address } = req.body;
-  const result = await orderService.createOrder({ userId, items, address });
+  // Giờ đây chúng ta nhận vào 'shippingAddress' là một object
+  const { items, shippingAddress } = req.body; 
+
+  const result = await orderService.createOrder({ userId, items, shippingAddress });
   return res.status(result.EC === 0 ? 201 : 400).json(result);
 };
 

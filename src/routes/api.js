@@ -16,14 +16,14 @@ const { verifyJWT } = require("../middleware/auth");
 const routerAPI = express.Router();
 
 // Public
-routerAPI.get("/", (req, res) => res.status(200).json("Hello world api"));
+routerAPI.get("/", (req, res) => res.status(200).json(""));
 routerAPI.post("/register", createUser);
 routerAPI.post("/login", handleLogin);
 
 // Mount routes
 routerAPI.use("/products", productRoutes);
 routerAPI.use("/orders", orderRoutes);
-routerAPI.use("/users", userRoutes); // <--- Quan trọng: tất cả user API nằm ở đây
+routerAPI.use("/users", userRoutes); // tất cả user API nằm ở đây
 
 // Cart routes (user must login)
 routerAPI.get("/cart", verifyJWT, getCart);
