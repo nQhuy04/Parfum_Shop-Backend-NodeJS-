@@ -68,7 +68,7 @@ const createOrder = async ({ userId, items, shippingAddress }) => {
     }
 
     // 5. Clear cart của user (không đổi)
-    await Cart.findOneAndRemove({ user: userId }); // Dùng findOneAndRemove để xóa hẳn cart
+    await Cart.findOneAndDelete({ user: userId }); // Dùng findOneAndRemove để xóa hẳn cart
 
     // 6. Lấy lại order đã populate để trả về (không đổi)
     const populatedOrder = await Order.findById(order._id)
