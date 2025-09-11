@@ -2,7 +2,7 @@
 
 Đây là hệ thống backend cho dự án Parfum Shop, được xây dựng bằng Node.js, Express.js và MongoDB. Hệ thống cung cấp một bộ API RESTful hoàn chỉnh để hỗ trợ tất cả các chức năng của một trang web thương mại điện tử.
 
-> Đây là phần Backend của một dự án Full-stack. Vui lòng tham khảo repository của Frontend tại đây: `[Link tới repo Frontend của bạn]`
+> Đây là phần Backend của một dự án Full-stack. Vui lòng tham khảo repository của Frontend tại đây: https://github.com/nQhuy04/Parfum_Shop-Frontend-ReactJS-
 
 ## ✨ Các Tính Năng & Kiến trúc nổi bật
 
