@@ -4,6 +4,7 @@ const { createUser, handleLogin } = require("../controllers/userController");
 const productRoutes = require("./product");
 const orderRoutes = require("./order");
 const userRoutes = require("./user");
+const statsRoutes = require('./stats'); 
 const {
   getCart,
   addToCart,
@@ -12,6 +13,7 @@ const {
   clearCart,
 } = require("../controllers/cartController");
 const { verifyJWT } = require("../middleware/auth");
+
 
 const routerAPI = express.Router();
 
@@ -31,5 +33,6 @@ routerAPI.post("/cart", verifyJWT, addToCart);
 routerAPI.put("/cart", verifyJWT, updateItemQuantity);
 routerAPI.delete("/cart/:productId", verifyJWT, removeItem);
 routerAPI.delete("/cart", verifyJWT, clearCart);
+routerAPI.use('/stats', statsRoutes);
 
 module.exports = routerAPI;
